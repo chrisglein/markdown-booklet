@@ -1,0 +1,24 @@
+title: "A Booklet About Booklets"
+
+# Logical page + margins. The physical sheet is derived as two pages wide.
+config:
+  page:
+    width: 5.5in
+    height: 8.5in
+  margins:
+    inner: 0.75in
+    outer: 0.5in
+    top: 0.6in
+    bottom: 0.6in
+  signatureSize: all
+
+# Pages in reading order. Each entry is a file (string) or an object with
+# overrides. Type is inferred from extension/frontmatter unless set here.
+pages:
+  - { file: cover.html, showPageNumber: false }
+  - { file: title.md, showPageNumber: false }
+  - { file: copyright.html, showPageNumber: false }
+  - { file: preface.md, startOn: recto }
+  - { file: chapter-1.md, startOn: recto }
+  - { file: world-map.md, type: spread }
+  - { file: chapter-2.md, startOn: recto }

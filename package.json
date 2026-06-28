@@ -1,0 +1,23 @@
+{
+  "name": "markdown-booklet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Render Markdown/HTML pages into a booklet-imposed printable HTML document for book-fold (saddle-stitch) printing. Explicit pagination, no auto-flow.",
+  "license": "MIT",
+  "bin": {
+    "markdown-booklet": "src/cli.js"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "build:sample": "node src/cli.js build examples/sample-book/book.yaml --out dist/sample.html",
+    "build:sample:reading": "node src/cli.js build examples/sample-book/book.yaml --reading --out dist/sample-reading.html",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "markdown-it": "^14.1.0"
+  }
+}
