@@ -6,8 +6,7 @@ const path = require('node:path');
 
 const { loadBook } = require('../src/source');
 const { buildPipeline } = require('../src/index');
-const { renderPrintableHtml, renderReadingHtml } = require('../src/html');
-
+const { renderPrintableHtml, renderReadingHtml, bookletStyles } = require('../src/html');
 const MANIFEST = path.join(__dirname, '..', 'examples', 'sample-book', 'book.yaml');
 
 test('booklet HTML uses a landscape sheet sized at two pages wide', () => {
@@ -50,4 +49,17 @@ test('the spread halves remain a consecutive verso/recto pair', () => {
   assert.equal(left.side, 'verso');
   assert.equal(right.side, 'recto');
   assert.equal(right.number, left.number + 1);
+});
+
+test('a custom stylesheet is appended after the built-in styles', () => {
+  const config = {
+    page: { width: '5.5in', height: '8.5in' },
+    margins: { inner: '0.75in', outer: '0.5in', top: '0.6in', bottom: '0.6in' },
+    pageNumber: { show: true, fontSize: '9pt' },
+    customCss: '.song-title { font-family: "Primitive"; }',
+  };
+  const css = bookletStyles(config);
+  assert.match(css, /\.song-title \{ font-family: "Primitive"; \}/);
+  // Appears after the base rules it can override.
+  assert.ok(css.indexOf('.page.blank') < css.indexOf('.song-title'));
 });

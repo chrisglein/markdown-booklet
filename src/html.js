@@ -61,6 +61,7 @@ html, body { margin: 0; padding: 0; background: #f0f0f0; }
 .page.verso .page-number { left: var(--m-outer); }
 .page.recto .page-number { right: var(--m-outer); }
 .page.blank .page-content { visibility: hidden; }
+${config.customCss || ''}
 `;
 }
 

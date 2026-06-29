@@ -54,6 +54,7 @@ config:
   page: { width: 5.5in, height: 8.5in }
   margins: { inner: 0.75in, outer: 0.5in, top: 0.6in, bottom: 0.6in }
   signatureSize: all
+  stylesheet: book.css   # optional: appended after built-in styles
 
 pages:
   - { file: cover.html, showPageNumber: false }
@@ -89,6 +90,10 @@ Markdown files use standard `---` YAML frontmatter. HTML files may use a leading
 A spread is one source file producing two facing pages. Separate the left and right halves with a `<!-- spread-break -->` marker. The assembler guarantees the left half lands on a **verso** (even) page and the right on a **recto** (odd) page, inserting a blank beforehand if necessary.
 
 Note: only the *centermost* facing pair shares a physical sheet. A picture meant to span the gutter should be placed at the center of the signature.
+
+### Custom styles
+
+Set `config.stylesheet` to a path (relative to `book.yaml`) and its CSS is inlined into the output `<head>` after the built-in styles, so it can override typography and layout. Because the CSS is inlined, any `url()` references (fonts, images) resolve relative to the **output HTML file**, not the stylesheet — build into the book's own folder so sibling `fonts/` and `img/` paths resolve.
 
 ## Imposition
 

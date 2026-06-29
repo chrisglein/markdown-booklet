@@ -79,6 +79,15 @@ function loadBook(manifestPath) {
   const title = manifest.title || 'Untitled';
   const config = mergeConfig(DEFAULT_CONFIG, manifest.config || {});
 
+  // Inline an optional custom stylesheet so the HTML stage can append it.
+  if (config.stylesheet) {
+    const cssPath = path.resolve(baseDir, config.stylesheet);
+    if (!fs.existsSync(cssPath)) {
+      throw new Error(`Stylesheet not found: ${config.stylesheet}`);
+    }
+    config.customCss = fs.readFileSync(cssPath, 'utf8');
+  }
+
   if (!Array.isArray(manifest.pages)) {
     throw new Error('book.yaml must define a `pages:` list.');
   }

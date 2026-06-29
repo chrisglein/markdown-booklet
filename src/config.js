@@ -32,6 +32,11 @@ const DEFAULT_CONFIG = {
   // 'all' = a single signature containing the whole book. A number (e.g. 16)
   // splits the book into fixed-size signatures.
   signatureSize: 'all',
+
+  // Optional path (relative to book.yaml) to a custom stylesheet whose
+  // contents are appended after the built-in styles, letting a book override
+  // typography and layout. Resolved and inlined during source loading.
+  stylesheet: null,
 };
 
 /** Parse a CSS length like "5.5in" into { value, unit }. */
