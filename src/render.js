@@ -3,6 +3,7 @@
 const MarkdownIt = require('markdown-it');
 
 const { PageType, SPREAD_BREAK } = require('./types');
+const song = require('./song');
 
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
 
@@ -69,6 +70,33 @@ function renderSource(source) {
         {
           type: PageType.SPREAD,
           html: renderMarkdown(right),
+          showPageNumber,
+          spreadId: id,
+          spreadRole: 'right',
+        },
+      ];
+    }
+
+    case PageType.SONG: {
+      const id = `song-${++spreadCounter}`;
+      const parts = song.splitPages(source.content || '');
+      if (parts.length < 2) {
+        throw new Error(
+          `Song "${source.file || meta.title || id}" must contain a "---" ` +
+            `page break separating its two facing pages.`,
+        );
+      }
+      return [
+        {
+          type: PageType.SONG,
+          html: song.parsePage(parts[0]),
+          showPageNumber,
+          spreadId: id,
+          spreadRole: 'left',
+        },
+        {
+          type: PageType.SONG,
+          html: song.parsePage(parts.slice(1).join('\n---\n')),
           showPageNumber,
           spreadId: id,
           spreadRole: 'right',

@@ -72,6 +72,7 @@ A `pages` entry is either a **string** (a filename, or the literal `blank`) or a
 |---|---|---|
 | `page` | Markdown (default for `.md`) | 1 logical page |
 | `spread` | Markdown with a `<!-- spread-break -->` marker | 2 linked pages (verso + recto) |
+| `song` | Song format with a `---` page break | 2 linked pages (verso + recto) |
 | `html` | Raw HTML (default for `.html`) | 1 logical page (body extracted) |
 | `blank` | none | 1 intentionally blank page |
 
@@ -90,6 +91,21 @@ Markdown files use standard `---` YAML frontmatter. HTML files may use a leading
 A spread is one source file producing two facing pages. Separate the left and right halves with a `<!-- spread-break -->` marker. The assembler guarantees the left half lands on a **verso** (even) page and the right on a **recto** (odd) page, inserting a blank beforehand if necessary.
 
 Note: only the *centermost* facing pair shares a physical sheet. A picture meant to span the gutter should be placed at the center of the signature.
+
+### Songs
+
+The `song` type compiles a readable text format into a two-page spread, styled by your stylesheet:
+
+```
+# Title              -> <h1 class="song-title">
+*credit*             -> <p class="song-credit">
+{chorus}             -> dashed chorus box (until a blank line)
+[C]over [F]words     -> chords float above lyrics
+plain lines          -> a <div class="verse"> of <p>
+> response line      -> indented italic refrain
+[Chorus]             -> a chorus repeat cue
+---                  -> page break (left | right)
+```
 
 ### Custom styles
 

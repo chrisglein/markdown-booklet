@@ -15,6 +15,7 @@
 const PageType = Object.freeze({
   PAGE: 'page',
   SPREAD: 'spread',
+  SONG: 'song',
   HTML: 'html',
   BLANK: 'blank',
 });
