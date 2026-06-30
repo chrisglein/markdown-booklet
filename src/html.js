@@ -11,13 +11,12 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;');
 }
 
-/** Content typography + structural CSS shared by both output modes. */
-function baseStyles(config) {
+/** Shared CSS custom properties derived from the page/margins config. */
+function rootVars(config) {
   const margins = config.margins || {};
   const page = config.page || {};
   const pageNumber = config.pageNumber || {};
-  return `
-:root {
+  return `:root {
   --page-w: ${page.width};
   --page-h: ${page.height};
   --m-inner: ${margins.inner};
@@ -25,7 +24,13 @@ function baseStyles(config) {
   --m-top: ${margins.top};
   --m-bottom: ${margins.bottom};
   --pn-size: ${pageNumber.fontSize || '9pt'};
+}`;
 }
+
+/** Content typography + structural CSS shared by the paginated output modes. */
+function baseStyles(config) {
+  return `
+${rootVars(config)}
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #f0f0f0; }
 .page {
@@ -108,6 +113,51 @@ function readingStyles(config) {
 `;
 }
 
+/**
+ * CSS for single-page reading mode: a continuous, reflowable document with no
+ * imposition and no fixed page boxes, so content stays legible on a phone or
+ * e-reader. Sections still break onto separate pages when printed.
+ */
+function singleStyles(config) {
+  return `
+${rootVars(config)}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; }
+.book {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+.page {
+  position: relative;
+  background: transparent;
+}
+.page + .page {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid #ddd;
+}
+.page-content {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: #111;
+}
+.page-content :first-child { margin-top: 0; }
+.page-content h1, .page-content h2, .page-content h3 {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.2;
+}
+.page-content img { max-width: 100%; height: auto; }
+@media print {
+  .page { break-after: page; page-break-after: always; }
+  .page:last-child { break-after: auto; page-break-after: auto; }
+  .page + .page { margin-top: 0; padding-top: 0; border-top: 0; }
+}
+${config.customCss || ''}
+`;
+}
+
 /** Render one page into a positioned div for the given facing side. */
 function renderPageDiv(page, sideClass, config) {
   if (!page) {
@@ -171,10 +221,56 @@ function renderReadingHtml(logicalBook) {
   return documentShell(logicalBook.title, readingStyles(config), pagesHtml);
 }
 
+/**
+ * Group logical pages into the sections of a single-page document: blank
+ * (padding/alignment) pages are dropped, and the two halves of a spread or
+ * song are merged into one continuous section so it never breaks mid-flow.
+ */
+function singleSections(pages) {
+  const visible = pages.filter((page) => page.type !== 'blank');
+  const sections = [];
+  for (let i = 0; i < visible.length; ) {
+    const page = visible[i];
+    if (page.spreadId) {
+      const parts = [];
+      let j = i;
+      while (j < visible.length && visible[j].spreadId === page.spreadId) {
+        parts.push(visible[j].html || '');
+        j += 1;
+      }
+      sections.push(parts.join('\n'));
+      i = j;
+    } else {
+      sections.push(page.html || '');
+      i += 1;
+    }
+  }
+  return sections;
+}
+
+/**
+ * Render a LogicalBook to a single-page, reflowable HTML string: every page in
+ * reading order, no imposition, no fixed page size — a phone/e-reader friendly
+ * export from the same source as the printable booklet.
+ */
+function renderSingleHtml(logicalBook) {
+  const { config } = logicalBook;
+  const sectionsHtml = singleSections(logicalBook.pages)
+    .map(
+      (html) =>
+        `<article class="page single"><div class="page-content">${html}</div></article>`,
+    )
+    .join('\n');
+  const body = `<main class="book">\n${sectionsHtml}\n</main>`;
+  return documentShell(logicalBook.title, singleStyles(config), body);
+}
+
 module.exports = {
   renderPrintableHtml,
   renderReadingHtml,
+  renderSingleHtml,
   escapeHtml,
   bookletStyles,
   readingStyles,
+  singleStyles,
 };

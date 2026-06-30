@@ -4,6 +4,8 @@ Render explicitly-paginated Markdown and HTML pages into a **booklet-imposed pri
 
 This is deliberately **not** a document layout engine. There is no automatic pagination, no widow/orphan control, no content reflow. You decide where every page begins; the tool handles page numbering, blank padding, and the arithmetic of the fold.
 
+For a digital companion to the printed booklet, a **single-page mode** emits the same source as one continuous, reflowable HTML document — phone- and e-reader-friendly — so one set of source files yields both a physical printed copy and a digital ebook copy.
+
 ## Install
 
 ```sh
@@ -20,6 +22,9 @@ node src/cli.js build examples/sample-book/book.yaml --out dist/sample.html
 
 # Reading-order proof (one logical page per printed page, no imposition)
 node src/cli.js build examples/sample-book/book.yaml --reading --out dist/proof.html
+
+# Single-page ebook (one continuous, reflowable document for phones/e-readers)
+node src/cli.js build examples/sample-book/book.yaml --single --out dist/ebook.html
 ```
 
 Open the HTML in a Chromium-based browser and use **Print** (or **Save as PDF**). See [Printing](#printing) below.
@@ -134,17 +139,34 @@ The left slot of every sheet side is a verso (even page); the right slot is a re
 
 To export a PDF, use the browser's **Save as PDF** destination with the same settings.
 
+## Single-page (ebook) mode
+
+`--single` produces a digital companion to the printed booklet from the same `book.yaml`: one continuous, reflowable HTML document instead of imposed sheets. It deliberately ignores the fold — pages flow top to bottom in reading order inside a narrow, centered column that adapts to the screen, so it stays legible on a phone or e-reader.
+
+Differences from the booklet and reading modes:
+
+- **No imposition and no fixed page boxes.** Content reflows to the device width rather than being clipped to a 5.5in × 8.5in page.
+- **Blank pages are dropped.** Padding and `startOn`/spread-alignment blanks are print-only artifacts, so they never appear.
+- **Spreads and songs are merged.** The two halves of a spread or song join into one section, so a song never breaks across an artificial divide.
+- **No page numbers.** They are meaningless once the text reflows.
+
+Your `config.stylesheet` is still inlined, so song markup (`.song-title`, `.chorus`, chord-over-lyric `.cl`, …) renders with your typography. Open the output in any browser to read, or use **Save as PDF** for a portrait, single-column ebook. Each section also breaks onto its own printed page if you print it directly.
+
+```sh
+node src/cli.js build examples/sample-book/book.yaml --single --out dist/ebook.html
+```
+
 ## Programmatic API
 
 ```js
 const { buildBookFromManifest } = require('./src');
 
 const { html, logical, printable } = buildBookFromManifest('examples/sample-book/book.yaml', {
-  mode: 'booklet', // or 'reading'
+  mode: 'booklet', // 'booklet' | 'reading' | 'single'
 });
 ```
 
-Individual stages (`renderPages`, `assemble`, `impose`, `renderPrintableHtml`) are also exported for composition and testing.
+Individual stages (`renderPages`, `assemble`, `impose`, `renderPrintableHtml`, `renderReadingHtml`, `renderSingleHtml`) are also exported for composition and testing.
 
 ## Tests
 
@@ -152,7 +174,7 @@ Individual stages (`renderPages`, `assemble`, `impose`, `renderPrintableHtml`) a
 npm test
 ```
 
-Uses the built-in Node test runner (`node --test`). Coverage includes the canonical imposition example, blank insertion for `startOn`/spreads, page numbering, rendering, manifest loading, and HTML output.
+Uses the built-in Node test runner (`node --test`). Coverage includes the canonical imposition example, blank insertion for `startOn`/spreads, page numbering, rendering, manifest loading, and HTML output for the booklet, reading, and single-page modes.
 
 ## Non-goals
 

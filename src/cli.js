@@ -14,15 +14,17 @@ Usage:
 Options:
   --out <file>     Write HTML to <file> (default: stdout).
   --reading        Output reading-order proof instead of booklet imposition.
+  --single         Output a continuous single-page document (phone/e-reader).
   -h, --help       Show this help.
 
 Examples:
   markdown-booklet build examples/sample-book/book.yaml --out dist/sample.html
   markdown-booklet build examples/sample-book/book.yaml --reading --out proof.html
+  markdown-booklet build examples/sample-book/book.yaml --single --out ebook.html
 `;
 
 function parseArgs(argv) {
-  const args = { _: [], out: null, reading: false, help: false };
+  const args = { _: [], out: null, reading: false, single: false, help: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     switch (arg) {
@@ -31,6 +33,9 @@ function parseArgs(argv) {
         break;
       case '--reading':
         args.reading = true;
+        break;
+      case '--single':
+        args.single = true;
         break;
       case '-h':
       case '--help':
@@ -62,18 +67,19 @@ function main(argv) {
     return 1;
   }
 
-  const mode = args.reading ? 'reading' : 'booklet';
+  const mode = args.single ? 'single' : args.reading ? 'reading' : 'booklet';
   const { html, logical, printable } = buildBookFromManifest(manifestPath, { mode });
 
   if (args.out) {
     const outPath = path.resolve(args.out);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, html, 'utf8');
-    process.stderr.write(
-      `Wrote ${mode} HTML to ${outPath}\n` +
-        `  logical pages: ${logical.pageCount}\n` +
-        `  sheets: ${printable.sheets.length} (${printable.pageCount} pages after padding)\n`,
-    );
+    let summary =
+      `Wrote ${mode} HTML to ${outPath}\n` + `  logical pages: ${logical.pageCount}\n`;
+    if (mode === 'booklet') {
+      summary += `  sheets: ${printable.sheets.length} (${printable.pageCount} pages after padding)\n`;
+    }
+    process.stderr.write(summary);
   } else {
     process.stdout.write(html);
   }

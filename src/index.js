@@ -4,7 +4,7 @@ const { loadBook } = require('./source');
 const { renderPages } = require('./render');
 const { assemble } = require('./assemble');
 const { impose } = require('./impose');
-const { renderPrintableHtml, renderReadingHtml } = require('./html');
+const { renderPrintableHtml, renderReadingHtml, renderSingleHtml } = require('./html');
 const config = require('./config');
 const types = require('./types');
 
@@ -22,16 +22,27 @@ function buildPipeline(book) {
 }
 
 /**
- * Load a book.yaml manifest and produce printable HTML.
+ * Load a book.yaml manifest and produce HTML in the requested mode.
+ *
+ *   - 'booklet' (default): booklet-imposed landscape sheets for book-fold print.
+ *   - 'reading': one logical page per printed page (a print proof).
+ *   - 'single': a continuous, reflowable single-page document for phones/e-readers.
  *
  * @param {string} manifestPath
- * @param {{ mode?: 'booklet'|'reading' }} [options]
+ * @param {{ mode?: 'booklet'|'reading'|'single' }} [options]
  * @returns {{ html:string, logical:Object, printable:Object }}
  */
 function buildBookFromManifest(manifestPath, { mode = 'booklet' } = {}) {
   const book = loadBook(manifestPath);
   const { logical, printable } = buildPipeline(book);
-  const html = mode === 'reading' ? renderReadingHtml(logical) : renderPrintableHtml(printable);
+  let html;
+  if (mode === 'reading') {
+    html = renderReadingHtml(logical);
+  } else if (mode === 'single') {
+    html = renderSingleHtml(logical);
+  } else {
+    html = renderPrintableHtml(printable);
+  }
   return { html, logical, printable };
 }
 
@@ -46,6 +57,7 @@ module.exports = {
   impose,
   renderPrintableHtml,
   renderReadingHtml,
+  renderSingleHtml,
   // Utilities
   config,
   types,

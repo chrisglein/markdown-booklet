@@ -11,6 +11,7 @@
   "scripts": {
     "build:sample": "node src/cli.js build examples/sample-book/book.yaml --out dist/sample.html",
     "build:sample:reading": "node src/cli.js build examples/sample-book/book.yaml --reading --out dist/sample-reading.html",
+    "build:sample:single": "node src/cli.js build examples/sample-book/book.yaml --single --out dist/sample-single.html",
     "test": "node --test"
   },
   "engines": {
