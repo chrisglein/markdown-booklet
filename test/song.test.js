@@ -58,6 +58,17 @@ test('songs without a page break are rejected', () => {
   );
 });
 
+test('a song with spread:false renders a single page', () => {
+  const pages = renderSource({
+    type: 'song',
+    meta: { spread: false },
+    content: '# A\n\nonly one page',
+  });
+  assert.equal(pages.length, 1);
+  assert.equal(pages[0].spreadRole, undefined);
+  assert.match(pages[0].html, /only one page/);
+});
+
 test('text is escaped to keep output well-formed', () => {
   assert.equal(splitPages('a\n---\nb').length, 2);
   assert.match(parsePage('1 < 2 & 3'), /1 &lt; 2 &amp; 3/);

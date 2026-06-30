@@ -80,6 +80,17 @@ function renderSource(source) {
     case PageType.SONG: {
       const id = `song-${++spreadCounter}`;
       const parts = song.splitPages(source.content || '');
+      if (meta.spread === false) {
+        // Single-page song: flows like a normal page (no forced spread).
+        return [
+          {
+            type: PageType.SONG,
+            html: song.parsePage(parts.join('\n---\n')),
+            showPageNumber,
+            startOn,
+          },
+        ];
+      }
       if (parts.length < 2) {
         throw new Error(
           `Song "${source.file || meta.title || id}" must contain a "---" ` +
